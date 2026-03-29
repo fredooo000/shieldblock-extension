@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShieldBlock — Kill Every Ad. Forever.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050508;
+      --surface: #0d0d14;
+      --surface2: #12121e;
+      --border: rgba(0, 255, 170, 0.12);
+      --accent: #00ffaa;
+      --accent2: #00cfff;
+      --accent-dim: rgba(0, 255, 170, 0.08);
+      --text: #e8eaf0;
+      --text-muted: #6b7280;
+      --danger: #ff4757;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── CANVAS BACKGROUND ── */
+    #grid-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 48px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(5, 5, 8, 0.8);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(0,255,170,0.5);
+    }
+
+    .nav-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 4px 12px;
+      border-radius: 2px;
+      letter-spacing: 1px;
+      opacity: 0.8;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.2s forwards;
+    }
+
+    .hero-shield {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 36px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.3s forwards;
+    }
+
+    .shield-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 24px rgba(0,255,170,0.6));
+      animation: pulse-shield 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-shield {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(0,255,170,0.5)); }
+      50% { filter: drop-shadow(0 0 40px rgba(0,255,170,0.9)); }
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 12vw, 9rem);
+      letter-spacing: 6px;
+      line-height: 0.9;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+
+    .hero-sub {
+      font-size: 1.2rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 56px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.55s forwards;
+    }
+
+    .hero-sub span { color: var(--text); font-weight: 500; }
+
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.7s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: #050508;
+      padding: 16px 40px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: 4px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.15);
+      transform: translateX(-100%);
+      transition: transform 0.3s;
+    }
+
+    .btn-primary:hover::before { transform: translateX(0); }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,255,170,0.35);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      color: var(--text);
+      padding: 16px 40px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      border-radius: 4px;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.15);
+      transition: all 0.25s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-3px);
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      margin: 0 auto;
+      max-width: 800px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 8px;
+      overflow: hidden;
+      animation: fadeUp 0.8s ease 0.9s both;
+    }
+
+    .stat-item {
+      flex: 1;
+      padding: 28px 20px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+
+    .stat-item:last-child { border-right: none; }
+    .stat-item:hover { background: var(--accent-dim); }
+
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* ── SECTION LAYOUT ── */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 100px 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      letter-spacing: 3px;
+      line-height: 1.05;
+      margin-bottom: 60px;
+    }
+
+    /* ── FEATURES GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      padding: 36px 32px;
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2px;
+      background: var(--accent);
+      transition: width 0.4s;
+    }
+
+    .feature-card:hover { background: var(--surface2); }
+    .feature-card:hover::after { width: 100%; }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 18px;
+      display: block;
+    }
+
+    .feature-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .feature-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ── INSTALL STEPS ── */
+    .install-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: start;
+    }
+
+    @media (max-width: 700px) {
+      .install-wrap { grid-template-columns: 1fr; }
+    }
+
+    .steps-list { display: flex; flex-direction: column; gap: 4px; }
+
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 24px 28px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .step-row:hover, .step-row.active {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+
+    .step-row.active .step-num { background: var(--accent); color: #050508; }
+
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: var(--surface2);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+      letter-spacing: 0;
+    }
+
+    .step-text { flex: 1; }
+    .step-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      letter-spacing: 0.5px;
+    }
+    .step-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+
+    code {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8em;
+      background: rgba(0,255,170,0.1);
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .install-visual {
+      position: sticky;
+      top: 100px;
+    }
+
+    .browser-mockup {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+    }
+
+    .browser-chrome {
+      background: var(--surface2);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+
+    .browser-url {
+      flex: 1;
+      margin-left: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+      padding: 5px 12px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .browser-body {
+      padding: 24px;
+    }
+
+    .extensions-header {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    .ext-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ext-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(0,255,170,0.3);
+    }
+
+    .ext-info { flex: 1; }
+    .ext-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .ext-status {
+      font-size: 0.78rem;
+      color: var(--accent);
+    }
+
+    .toggle {
+      width: 46px; height: 26px;
+      background: var(--accent);
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(0,255,170,0.4);
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; right: 3px;
+      width: 20px; height: 20px;
+      background: #050508;
+      border-radius: 50%;
+    }
+
+    /* ── BLOCKED TICKER ── */
+    .ticker-section {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      overflow: hidden;
+    }
+
+    .ticker-inner {
+      display: flex;
+      animation: ticker 20s linear infinite;
+      width: max-content;
+    }
+
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 40px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .ticker-item .dot-accent {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+    }
+
+    .footer-note {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .stats-bar { flex-direction: column; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat-item:last-child { border-bottom: none; }
+      footer { padding: 32px 24px; flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="grid-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ShieldBlock</div>
+  <div class="nav-badge">FREE / OPEN SOURCE</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Browser Extension · Chrome & Edge</div>
+
+  <div class="hero-shield">
+    <svg class="shield-svg" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 5 L90 22 L90 58 C90 78 72 96 50 105 C28 96 10 78 10 58 L10 22 Z" 
+            fill="rgba(0,255,170,0.08)" stroke="#00ffaa" stroke-width="2"/>
+      <path d="M50 18 L80 31 L80 58 C80 73 66 88 50 96 C34 88 20 73 20 58 L20 31 Z" 
+            fill="rgba(0,255,170,0.05)" stroke="rgba(0,255,170,0.4)" stroke-width="1"/>
+      <line x1="36" y1="55" x2="46" y2="65" stroke="#00ffaa" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="46" y1="65" x2="64" y2="45" stroke="#00ffaa" stroke-width="3.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <h1>SHIELD<br>BLOCK</h1>
+  <p class="hero-sub">
+    The ad blocker that actually <span>blocks everything</span>. 
+    Zero trackers, zero popups, zero garbage. 
+    Install in 60 seconds.
+  </p>
+
+  <div class="cta-group">
+    <a href="https://github.com/fredooo000/shieldblock-extension/archive/refs/heads/main.zip"
+       class="btn-primary" target="_blank">
+      ↓ &nbsp;DOWNLOAD .ZIP
+    </a>
+    <a href="#install" class="btn-secondary">HOW TO INSTALL →</a>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-section">
+  <div class="ticker-inner" id="ticker">
+    <!-- items injected by JS -->
+  </div>
+</div>
+
+<!-- STATS -->
+<div style="position:relative;z-index:1;padding:0 24px 80px;max-width:1000px;margin:0 auto;">
+  <div class="stats-bar reveal">
+    <div class="stat-item">
+      <div class="stat-number" data-count="99">0</div>
+      <div class="stat-label">% Ads Blocked</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-count="0">100</div>
+      <div class="stat-label">Data Collected</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-count="2">0</div>
+      <div class="stat-label">Browsers Supported</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-count="60">0</div>
+      <div class="stat-label">Sec Install Time</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section>
+  <div class="section-label reveal">What you get</div>
+  <h2 class="section-title reveal">Built different.<br>Works everywhere.</h2>
+
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <span class="feature-icon">🚫</span>
+      <div class="feature-title">AD ANNIHILATION</div>
+      <p class="feature-desc">Cosmetic + network-level blocking. Banner ads, video pre-rolls, pop-unders — all gone before they even load.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🔍</span>
+      <div class="feature-title">TRACKER BURIAL</div>
+      <p class="feature-desc">Kills fingerprinting scripts, pixel trackers, and 3rd-party cookies. Browse without being watched.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">⚡</span>
+      <div class="feature-title">SPEED BOOST</div>
+      <p class="feature-desc">Pages load up to 3× faster when they're not dragging in megabytes of ad payloads and surveillance scripts.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🔓</span>
+      <div class="feature-title">OPEN SOURCE</div>
+      <p class="feature-desc">Every line of code is public. No hidden telemetry. No premium tier. Fork it, audit it, own it.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🧩</span>
+      <div class="feature-title">CUSTOM RULES</div>
+      <p class="feature-desc">Experimental rule engine lets you write your own filters — block exactly what you want, allow what you don't.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🌐</span>
+      <div class="feature-title">CHROME & EDGE</div>
+      <p class="feature-desc">Works natively on both Chromium browsers with no compromise. Load unpacked — no store required.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="section-label reveal">Setup Guide</div>
+  <h2 class="section-title reveal">Online in<br>60 seconds.</h2>
+
+  <div class="install-wrap">
+    <div class="steps-list reveal">
+
+      <div class="step-row active" data-step="0">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <div class="step-title">DOWNLOAD THE ZIP</div>
+          <div class="step-desc">Click the download button above. A <code>shieldblock.zip</code> file will land in your downloads folder.</div>
+        </div>
+      </div>
+
+      <div class="step-row" data-step="1">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <div class="step-title">EXTRACT THE FILES</div>
+          <div class="step-desc">Right-click the .zip and select "Extract All". Keep note of where you save the folder.</div>
+        </div>
+      </div>
+
+      <div class="step-row" data-step="2">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <div class="step-title">OPEN EXTENSIONS PAGE</div>
+          <div class="step-desc">Navigate to <code>chrome://extensions</code> in Chrome or <code>edge://extensions</code> in Edge.</div>
+        </div>
+      </div>
+
+      <div class="step-row" data-step="3">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <div class="step-title">ENABLE DEVELOPER MODE</div>
+          <div class="step-desc">Flip the <strong>Developer Mode</strong> toggle in the top-right corner of the page.</div>
+        </div>
+      </div>
+
+      <div class="step-row" data-step="4">
+        <div class="step-num">5</div>
+        <div class="step-text">
+          <div class="step-title">LOAD THE EXTENSION</div>
+          <div class="step-desc">Click <strong>"Load unpacked"</strong> and select the <code>/extension</code> folder from the extracted files. Done.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Browser Mockup -->
+    <div class="install-visual reveal">
+      <div class="browser-mockup">
+        <div class="browser-chrome">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <div class="browser-url">chrome://extensions</div>
+        </div>
+        <div class="browser-body">
+          <div class="extensions-header">EXTENSIONS &nbsp;·&nbsp; DEVELOPER MODE: ON</div>
+          <div class="ext-card">
+            <div class="ext-icon">🛡️</div>
+            <div class="ext-info">
+              <div class="ext-name">ShieldBlock</div>
+              <div class="ext-status">✓ Active — 3 ads blocked this session</div>
+            </div>
+            <div class="toggle"></div>
+          </div>
+
+          <div style="margin-top:20px;padding:14px;background:rgba(0,255,170,0.05);border:1px solid var(--border);border-radius:6px;">
+            <div style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--accent);margin-bottom:8px;letter-spacing:1px;">INSTALL OUTPUT</div>
+            <div style="font-family:'Space Mono',monospace;font-size:0.72rem;color:#4ade80;line-height:1.8;">
+              [✓] manifest.json loaded<br>
+              [✓] background.js active<br>
+              [✓] Filter rules: 42,891<br>
+              [✓] ShieldBlock is ON
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;">
+        <a href="https://github.com/fredooo000/shieldblock-extension/archive/refs/heads/main.zip"
+           class="btn-primary" target="_blank" style="width:100%;justify-content:center;text-decoration:none;display:flex;">
+          ↓ &nbsp;DOWNLOAD SHIELDBLOCK
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ShieldBlock</div>
+  <div class="footer-note">
+    EXPERIMENTAL &amp; EDUCATIONAL USE · CHROME &amp; EDGE · FREE FOREVER
+  </div>
+</footer>
+
+<script>
+  // ── GRID CANVAS ──
+  const canvas = document.getElementById('grid-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const dots = [];
+  for (let i = 0; i < 80; i++) {
+    dots.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5
+    });
+  }
+
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(0,255,170,0.04)';
+    ctx.lineWidth = 1;
+    const gSize = 60;
+    for (let x = 0; x < canvas.width; x += gSize) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += gSize) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    }
+
+    // Dots & connections
+    dots.forEach(d => {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0 || d.x > canvas.width) d.vx *= -1;
+      if (d.y < 0 || d.y > canvas.height) d.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,255,170,0.6)';
+      ctx.fill();
+    });
+
+    dots.forEach((a, i) => {
+      dots.slice(i + 1).forEach(b => {
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `rgba(0,255,170,${0.12 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      });
+    });
+
+    requestAnimationFrame(drawGrid);
+  }
+  drawGrid();
+
+  // ── TICKER ──
+  const blocked = [
+    'Google Ads', 'Facebook Pixel', 'DoubleClick', 'Criteo', 'AdSense',
+    'TikTok Pixel', 'Twitter Ads', 'Taboola', 'Outbrain', 'Amazon DSP',
+    'Yandex Metrica', 'Hotjar', 'FullStory', 'Heap Analytics', 'Mixpanel',
+    'AppNexus', 'MediaMath', 'The Trade Desk', 'Quantcast', 'Nielsen'
+  ];
+
+  const ticker = document.getElementById('ticker');
+  const items = [...blocked, ...blocked].map(b => {
+    return `<div class="ticker-item"><span class="dot-accent"></span>${b} BLOCKED</div>`;
+  }).join('');
+  ticker.innerHTML = items;
+
+  // ── SCROLL REVEAL ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // ── STEP TABS ──
+  document.querySelectorAll('.step-row').forEach(row => {
+    row.addEventListener('click', () => {
+      document.querySelectorAll('.step-row').forEach(r => r.classList.remove('active'));
+      row.classList.add('active');
+    });
+  });
+
+  // ── COUNT-UP ──
+  function countUp(el, target, isDown = false) {
+    const start = isDown ? target * 2 : 0;
+    const duration = 1800;
+    const startTime = performance.now();
+    function update(now) {
+      const p = Math.min((now - startTime) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      const val = isDown
+        ? Math.round(start - ease * start + target)
+        : Math.round(ease * target);
+      el.textContent = val + (el.dataset.count === '99' ? '%' : '');
+      if (p < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  const statsObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.stat-number').forEach(el => {
+          const t = parseInt(el.dataset.count);
+          countUp(el, t);
+        });
+        statsObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const statsBar = document.querySelector('.stats-bar');
+  if (statsBar) statsObserver.observe(statsBar);
+</script>
+</body>
+</html>
