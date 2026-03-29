@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShieldBlock - Ad Blocker + Tools</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3.2rem;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      font-size: 1.4rem;
+      opacity: 0.9;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 40px 30px;
+      margin: 30px auto;
+      max-width: 600px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 14px 32px;
+      margin: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+    .btn-chrome {
+      background: #4285F4;
+      color: white;
+    }
+    .btn-edge {
+      background: #0078D4;
+      color: white;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .feature {
+      background: rgba(255,255,255,0.08);
+      padding: 20px;
+      border-radius: 12px;
+    }
+    footer {
+      margin-top: 60px;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🛡️ ShieldBlock</h1>
+    <p class="subtitle">Powerful Ad Blocker + Discord Token Experiment Tool</p>
+
+    <div class="card">
+      <h2>Install Extension</h2>
+      <p style="margin: 20px 0 30px 0; opacity: 0.9;">
+        Works on <strong>Google Chrome</strong> and <strong>Microsoft Edge</strong> only.<br>
+        Click the button below for your browser.
+      </p>
+
+      <a href="#" id="chromeBtn" class="btn btn-chrome">Add to Google Chrome</a>
+      <a href="#" id="edgeBtn" class="btn btn-edge">Add to Microsoft Edge</a>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <h3>🚫 Smart Ad Blocking</h3>
+        <p>Blocks ads, trackers, and popups from major ad networks.</p>
+      </div>
+      <div class="feature">
+        <h3>🔍 Token Grabber</h3>
+        <p>Experimental Discord token capture (for testing purposes only).</p>
+      </div>
+      <div class="feature">
+        <h3>⚡ Lightweight</h3>
+        <p>Fast, clean, and doesn't slow down your browsing.</p>
+      </div>
+    </div>
+
+    <footer>
+      For educational and experimental purposes only.<br>
+      Made for Chrome & Edge
+    </footer>
+  </div>
+
+  <script>
+    // Chrome Install Button
+    document.getElementById('chromeBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert("To install:\n\n1. Download the extension folder\n2. Go to chrome://extensions/\n3. Enable Developer Mode\n4. Click 'Load unpacked' and select the folder");
+      window.open('https://chrome.google.com/webstore', '_blank');
+    });
+
+    // Edge Install Button
+    document.getElementById('edgeBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert("To install on Microsoft Edge:\n\n1. Download the extension folder\n2. Go to edge://extensions/\n3. Enable Developer Mode\n4. Click 'Load unpacked' and select the folder");
+      window.open('https://microsoftedge.microsoft.com/addons', '_blank');
+    });
+  </script>
+</body>
+</html>
